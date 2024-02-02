@@ -8,7 +8,6 @@ logger = logging.getLogger()
 class InMemDB:
     def __init__(self):
         self.db = {}
-        self.keys = set()
         self.value_counts = {}
         self.transaction_stack = []
         self.valid_commands = [
@@ -28,7 +27,6 @@ class InMemDB:
 
     def _debug(self):
         print(self.db)
-        print(self.keys)
         print(self.value_counts)
         print(self.transaction_stack)
         print(f"RAM usage(MB): {self._get_memory_usage()}")
@@ -88,7 +86,7 @@ class InMemDB:
             return "INVALID COMMAND"
 
     def _get(self, key):
-        if key in self.keys:
+        if key in self.db:
             return self.db[key]["current_value"]
         else:
             return "NULL"
@@ -115,7 +113,6 @@ class InMemDB:
         # If the key does not exist, create a new key
         else:
             self._append_to_transaction_block(f"DELETE {key}", is_rollback)
-            self.keys.add(key)
             self.db[key] = {"current_value": value, "previous_value": None}
             self._update_value_counts(value, 1)
 
@@ -133,11 +130,10 @@ class InMemDB:
         return count
 
     def _delete(self, key, is_rollback=False):
-        if key in self.keys:
+        if key in self.db:
             self._append_to_transaction_block(
                 f"SET {key} {self._get(key)}", is_rollback
             )
-            self.keys.remove(key)
             self._update_value_counts(self.db[key]["current_value"], -1)
             del self.db[key]
 
