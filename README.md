@@ -11,7 +11,8 @@ This repo consists of a source code of a Python script which simulates database 
 To get started with the code on this repo, you need to either *clone* or *download* this repo and branch into your machine as shown below;
 
 ```bash
-git clone https://github.com/affinaquest/engineer-python.git
+git clone https://github.com/clintonbuzon/engineer-python.git
+cd engineer-python/
 git checkout JCB-20240202
 ```
 
