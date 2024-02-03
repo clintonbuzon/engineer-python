@@ -1,14 +1,15 @@
 # In-Memory Database Implementation
 
-This repo consists of a source code of a Python script which simulates database commands using inmemory database
+This repository contains the source code for a Python script that simulates database commands using an in-memory database.
 
 ## Prerequisites
-- python 3.9+
-- venv
+
+- Python 3.9+
+- venv (Python virtual environment)
 
 ## Getting Started
 
-To get started with the code on this repo, you need to either *clone* or *download* this repo and branch into your machine as shown below;
+To get started, clone this repository and switch to the appropriate branch:
 
 ```bash
 git clone https://github.com/clintonbuzon/engineer-python.git
@@ -18,24 +19,25 @@ git checkout JCB-20240202
 
 ## Dependencies
 
-Before you begin playing with the source code, it is highly recommeneded you do this within a venv.
+For this project, it's recommended to use a Python virtual environment (venv). This isolates your project dependencies, preventing conflicts with packages in your global Python environment.
 
-First add execute permission to shell scripts
+First add execute permission to shell scripts:
 
 ```bash
 chmod +x *.sh
 ```
 
-You can install dependencies as shown below;
+You can set up your environment and install the necessary dependencies using the provided build script:
 
 ```bash
 ./build.sh
 ```
 
-Running the build shell command would do the following:
-- Install requirements.txt
-- Run linting via ruff and isort
-- Run tests to ensure that code is working as expected
+Executing the build script performs the following actions:
+
+- Installs the packages listed in `requirements.txt`
+- Lints the code using `ruff` and `isort` to ensure code quality
+- Runs unit tests to verify that the code behaves as expected
 
 ## Running the App
 
@@ -51,23 +53,21 @@ All performance requirements are tested within pytest. More details below.
 
 ### Aim for efficient operations
 
-Ensure that GET, SET, DELETE, and COUNT have a runtime of less than O(log n), if not better (where n is the number of items in the database).
+Operations GET, SET, DELETE, and COUNT should have a runtime of O(log n) or better, where n is the number of items in the database. This is tested by comparing command runtimes with a database of a million records.
 
-Tests done is to capture runtime of each command and compare the same command when the db has a million (1,000,000) records.
-
-The strategy implemented here is I used python dictionary to simulate the db. 
-- GET operations are relatively quick since there is no need to scan through the entire dictionary. Just specify the key and you can get the values quickly
-- SET operations do multiple things, but mainly does the SET as expected, and keeping track the count of values in a different python dictionary. This way there will be a minimal performance hit on each `SET` but there would be a significant performance boost on `COUNT`
-- DELETE operations are relatively quick since we used python dictionary and we just need to specify key to be deleted
-- COUNT operations are almost instantanious since each command that modified the db (e.g. `SET` and `DELETE`), count statistics are stored thus we just need to pull this instead of traversing through the entire db
+The strategy used here is a Python dictionary to simulate the database:
+- GET operations are fast as they directly access values using keys.
+- SET operations update the database and maintain a separate dictionary for value counts, improving COUNT performance.
+- DELETE operations are fast as they directly delete entries using keys.
+- COUNT operations are nearly instantaneous as they retrieve stored count statistics instead of scanning the entire database.
 
 ### Memory usage should not double with each transaction
 
-Initial thought on this was to create a copy of the entire DB when creating a transaction and just pointing to that copy when doing a `ROLLBACK` but this does double db size for each transaction.
+Initially, I considered duplicating the entire database for each transaction and reverting to this copy on a `ROLLBACK`. However, this doubles the database size for each transaction.
 
-Strategy implemented here is that we create a transaction stack that holds opposing commands whenever `SET` or `DELETE` operations are done. Whenever we do a `ROLLBACK`, we execute the opposing commands in proper order in order to get back the db from its previous state. 
+Instead, I implemented a transaction stack that stores the inverse of `SET` or `DELETE` operations. On a `ROLLBACK`, these inverse commands are executed in the correct order to restore the previous database state.
 
-Implemented code works with multiple nested transactions.
+The current implementation supports multiple nested transactions.
 
 ### Pass the first three test cases outlined in the exam document
 
